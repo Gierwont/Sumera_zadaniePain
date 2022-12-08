@@ -80,12 +80,18 @@ session_start();
     <?php
     require('connect.php');
 
+    $login = $_SESSION['login'];
+    $obecne_id = "";
+    $obecne_id = mysqli_fetch_array(mysqli_query($conn,"SELECT id FROM `user` WHERE `login` = '$login'")); 
+    $obecne_id=(int)$obecne_id[0];
+    
+
         if(isset($_POST['klasa'])){ //wstawianie rekordów do tabeli klasa
     $klasa= $_POST['klasa'];
 
-    $sql1 = "INSERT INTO klasa (name) VALUES ('$klasa')";
+    $sql1 = "INSERT INTO klasa (name,dodane_przez) VALUES ('$klasa','$obecne_id')";
     if (mysqli_query($conn, $sql1)) {
-        echo "Dodano rekord";
+        echo "<div class='text'>Dodano rekord</div>";
     } 
     else {
         echo "błąd: " . $sql1  . mysqli_error($conn);
@@ -99,9 +105,9 @@ session_start();
     $student_klasaid = mysqli_fetch_array(mysqli_query($conn,"SELECT id FROM `klasa` WHERE `name` = '$student_klasaname'")); 
     $student_klasaid=(int)$student_klasaid[0];
 
-    $sql2 = "INSERT INTO student (name,surname,class_id) VALUES ('$student_name','$student_surname','$student_klasaid')";
+    $sql2 = "INSERT INTO student (name,surname,class_id,dodane_przez) VALUES ('$student_name','$student_surname','$student_klasaid','$obecne_id')";
     if (mysqli_query($conn, $sql2)) {
-        echo "Dodano rekord";
+        echo "<div class='text'>Dodano rekord</div>";
     } 
     else {
         echo "błąd: " . $sql2  . mysqli_error($conn);
@@ -114,9 +120,9 @@ session_start();
     $subject_klasaid = mysqli_fetch_array(mysqli_query($conn,"SELECT id FROM `klasa` WHERE `name` = '$subject_klasaname'")); 
     $subject_klasaid=(int)$subject_klasaid[0];
 
-    $sql3 = "INSERT INTO subject (name,class_id) VALUES ('$subject_name','$subject_klasaid')";
+    $sql3 = "INSERT INTO subject (name,class_id,dodane_przez) VALUES ('$subject_name','$subject_klasaid','$obecne_id')";
     if (mysqli_query($conn, $sql3)) {
-        echo "Dodano rekord";
+        echo "<div class='text'>Dodano rekord</div>";
     } 
     else {
         echo "błąd: " . $sql3  . mysqli_error($conn);
@@ -128,9 +134,9 @@ session_start();
     $teacher_surname = $_POST['teacher_surname'];
     $teacher_age = $_POST['teacher_age'];
 
-    $sql4 = "INSERT INTO teacher (id,name,surname,age) VALUES (NULL, '$teacher_name','$teacher_surname','$teacher_age');";
+    $sql4 = "INSERT INTO teacher (id,name,surname,age,dodane_przez) VALUES (NULL, '$teacher_name','$teacher_surname','$teacher_age','$obecne_id');";
     if (mysqli_query($conn, $sql4)) {
-        echo "Dodano rekord";
+        echo "<div class='text'>Dodano rekord</div>";
     } 
     else {
         echo "błąd: " . $sql4  . mysqli_error($conn);
@@ -146,17 +152,12 @@ session_start();
     $user_name = $_POST['user_name'];
     $user_surname = $_POST['user_surname'];
     $user_age = $_POST['user_age'];
-    $admin=$_POST['admin'];
-    // if($_POST['admin']==TRUE){
-    //     $admin=1;
-    // }
-    // else {
-    //     $admin=0;
-    // }
-    $login = $_SESSION['login'];
-    $obecne_id = "";
-    $obecne_id = mysqli_fetch_array(mysqli_query($conn,"SELECT id FROM `user` WHERE `login` = '$login'")); 
-    $obecne_id=(int)$obecne_id[0];
+    if(empty($_POST['admin'])) {
+        $admin=0;
+    }
+    else{
+        $admin=$_POST['admin'];
+    }
     $_SESSION['login'] = $user_login;
     $sql_edit = "UPDATE user SET login = '$user_login', haslo= '$user_pass', name= '$user_name', surname= '$user_surname', age= '$user_age', admin= '$admin' WHERE id = $obecne_id;";
     if (mysqli_query($conn, $sql_edit)) {
@@ -172,7 +173,7 @@ session_start();
 
     if(isset($_POST['button1'])) {  //wyswietlanie tabeli klasa
         echo "<h1>Tabela klasa</h1><br>";
-        $result = mysqli_query($conn, "SELECT * FROM klasa");
+        $result = mysqli_query($conn, "SELECT * FROM klasa WHERE dodane_przez=$obecne_id");
         echo '<table><tr><th>Id</th><th>Name</th></tr>';
         while($row = mysqli_fetch_array($result)) {
             echo "<tr><td>{$row['id']}</td><td>{$row['name']}</td></tr>";
@@ -181,7 +182,7 @@ session_start();
     }
     if(isset($_POST['button2'])) {  //wyswietlanie tabeli student
         echo "<h1>Tabela student</h1><br>";
-        $result = mysqli_query($conn, "SELECT * FROM student");
+        $result = mysqli_query($conn, "SELECT * FROM student WHERE dodane_przez=$obecne_id");
         echo '<table><tr><th>Id</th><th>Name</th><th>Surname</th><th>Class_Id</th></tr>';
         while($row = mysqli_fetch_array($result)) {
             echo "<tr><td>{$row['id']}</td><td>{$row['name']}</td><td>{$row['surname']}</td><td>{$row['class_id']}</td></tr>";
@@ -190,7 +191,7 @@ session_start();
     }
     if(isset($_POST['button3'])) { //wyswietlanie tabeli subject
         echo "<h1>Tabela subject</h1><br>";
-        $result = mysqli_query($conn, "SELECT * FROM subject");
+        $result = mysqli_query($conn, "SELECT * FROM subject WHERE dodane_przez=$obecne_id");
         echo '<table><tr><th>Id</th><th>Name</th><th>Class_Id</th></tr>';
         while($row = mysqli_fetch_array($result)) {
             echo "<tr><td>{$row['id']}</td><td>{$row['name']}</td><td>{$row['class_id']}</td></tr>";
@@ -199,7 +200,7 @@ session_start();
     }
     if(isset($_POST['button4'])) { //wyswietlanie tabeli teacher
         echo "<h1>Tabela teacher</h1><br>";
-        $result = mysqli_query($conn, "SELECT * FROM teacher");
+        $result = mysqli_query($conn, "SELECT * FROM teacher WHERE dodane_przez=$obecne_id");
         echo '<table><tr><th>Id</th><th>Name</th><th>Surname</th><th>Age</th></tr>';
         while($row = mysqli_fetch_array($result)) {
             echo "<tr><td>{$row['id']}</td><td>{$row['name']}</td><td>{$row['surname']}</td><td>{$row['age']}</td></tr>";
@@ -208,14 +209,13 @@ session_start();
     }
     if(isset($_POST['button5'])) { //wyswietlanie tabeli user
         echo "<h1>Tabela user</h1><br>";
-        $result = mysqli_query($conn, "SELECT * FROM user");
+        $result = mysqli_query($conn, "SELECT * FROM user WHERE id=$obecne_id");
         echo '<table><tr><th>Id</th><th>Login</th><th>Haslo</th><th>Name</th><th>Surname</th><th>Age</th><th>Admin</th></tr>';
         while($row = mysqli_fetch_array($result)) {
             echo "<tr> <td>{$row['id']}</td> <td>{$row['login']}</td> <td>{$row['haslo']}</td> <td>{$row['name']}</td> <td>{$row['surname']}</td> <td>{$row['age']}</td> <td>{$row['admin']}</td> </tr>";
         }
         echo '</table>';
     }
-
     mysqli_close($conn);
     ?>
     

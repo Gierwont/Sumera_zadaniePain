@@ -13,19 +13,23 @@ session_start();
 <body>
     <?php
     require('connect.php');
-    error_reporting(0);
 
+
+    if($_POST['login']=="" || $_POST['pass']==""){
+        echo  "<h1 class='text'>podałeś puste hasło lub login</h1>";
+    }
+    else{
+
+    if(empty($_POST['admin'])) {
+        $admin=0;
+    }
+    else{
+        $admin=$_POST['admin'];
+    }
     $login= $_POST['login'];
     $name= $_POST['name'];
     $surname= $_POST['surname'];
     $age= $_POST['age'];
-    $admin=$_POST['admin'];
-    if($_POST['admin']==TRUE){
-        $admin=1;
-    }
-    else {
-        $admin=0;
-    }
     $pass= sha1($_POST['pass']);
 
 
@@ -46,9 +50,7 @@ session_start();
     if($_POST['age']!=NULL){
         $sql =$sql . ",age";
     }
-    if($_POST['admin']!=FALSE){
-        $sql =$sql . ",admin";
-    }
+
 
 
     if($_POST['name']=="" || $_POST['surname']=="" || $_POST['age']==NULL){
@@ -65,9 +67,6 @@ session_start();
     if($_POST['age']!=NULL){
         $sql =$sql . ",'$age'";
     }
-    if($_POST['admin']!=FALSE){
-        $sql =$sql . ",'$admin'";
-    }
     if($_POST['name']=="" || $_POST['surname']=="" || $_POST['age']==NULL){
         $sql = $sql . ");";
     }
@@ -77,11 +76,12 @@ session_start();
         echo "<h1>Dodano rekord</h1>";
     } 
     else {
-        echo '<div class="text">błąd: ' . $sql  . mysqli_error($conn) .'</div>';
+        echo '<div class="text"><h1>błąd: ' . $sql  . mysqli_error($conn) .'</h1></div>';
     }
 
 
 
+}
     mysqli_close($conn);
     ?>
     <br><div class="text"><a href="index.php">Powrót</a></div> 
